@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HoneyTrap — Cyber Threat Intelligence</title>
+  <meta name="description" content="Real-time honeypot monitoring dashboard for SSH, FTP, Telnet, and HTTP intrusion attempts." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/leaflet.css" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <!-- ── Header ── -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="20" cy="20" r="18" stroke="url(#lg1)" stroke-width="2"/>
+            <path d="M20 8 L28 16 L20 12 L12 16 Z" fill="url(#lg2)"/>
+            <path d="M12 16 L20 12 L28 16 L28 26 L20 32 L12 26 Z" fill="url(#lg3)" opacity="0.8"/>
+            <circle cx="20" cy="22" r="4" fill="#0ff" opacity="0.9"/>
+            <defs>
+              <linearGradient id="lg1" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00f5ff"/><stop offset="1" stop-color="#7c3aed"/>
+              </linearGradient>
+              <linearGradient id="lg2" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00f5ff"/><stop offset="1" stop-color="#06b6d4"/>
+              </linearGradient>
+              <linearGradient id="lg3" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#7c3aed" stop-opacity="0.6"/><stop offset="1" stop-color="#0ea5e9" stop-opacity="0.3"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <span class="logo-text">Honey<span class="accent">Trap</span></span>
+      </div>
+      <div class="header-status">
+        <div class="pulse-ring"></div>
+        <span id="status-text" class="status-label">LIVE MONITORING</span>
+      </div>
+      <div class="header-actions">
+        <button id="btn-clear" class="btn btn-ghost">🗑 Clear Logs</button>
+        <button id="btn-export" class="btn btn-primary">⬇ Export JSON</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── Main ── -->
+  <main class="main">
+    <!-- KPI Cards -->
+    <section class="kpi-grid" aria-label="Attack statistics">
+      <div class="kpi-card" id="kpi-total">
+        <div class="kpi-icon">🎯</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="stat-total">0</div>
+          <div class="kpi-label">Total Attacks</div>
+        </div>
+        <div class="kpi-sparkline" id="sp-total"></div>
+      </div>
+      <div class="kpi-card kpi-ssh" id="kpi-ssh">
+        <div class="kpi-icon">🔐</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="stat-ssh">0</div>
+          <div class="kpi-label">SSH Attempts</div>
+        </div>
+        <div class="kpi-tag">Port 2222</div>
+      </div>
+      <div class="kpi-card kpi-ftp" id="kpi-ftp">
+        <div class="kpi-icon">📂</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="stat-ftp">0</div>
+          <div class="kpi-label">FTP Attempts</div>
+        </div>
+        <div class="kpi-tag">Port 2121</div>
+      </div>
+      <div class="kpi-card kpi-telnet" id="kpi-telnet">
+        <div class="kpi-icon">💻</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="stat-telnet">0</div>
+          <div class="kpi-label">Telnet Attempts</div>
+        </div>
+        <div class="kpi-tag">Port 2323</div>
+      </div>
+      <div class="kpi-card kpi-http" id="kpi-http">
+        <div class="kpi-icon">🌐</div>
+        <div class="kpi-body">
+          <div class="kpi-value" id="stat-http">0</div>
+          <div class="kpi-label">HTTP Probes</div>
+        </div>
+        <div class="kpi-tag">Port 8080</div>
+      </div>
+    </section>
+
+    <!-- Map + Activity -->
+    <section class="content-grid">
+      <!-- Attack Map -->
+      <div class="panel panel-map">
+        <div class="panel-header">
+          <h2 class="panel-title">🗺 Global Attack Map</h2>
+          <div class="panel-badge" id="map-count">0 origins</div>
+        </div>
+        <div id="map" aria-label="World map showing attack origins"></div>
+      </div>
+
+      <!-- Activity Feed -->
+      <div class="panel panel-feed">
+        <div class="panel-header">
+          <h2 class="panel-title">⚡ Live Feed</h2>
+          <label class="toggle-wrap" for="toggle-pause">
+            <input type="checkbox" id="toggle-pause" />
+            <span class="toggle-slider"></span>
+            <span class="toggle-label">Pause</span>
+          </label>
+        </div>
+        <div id="feed" class="feed-list" aria-live="polite" aria-label="Live attack events"></div>
+      </div>
+    </section>
+
+    <!-- Detailed Log Table -->
+    <section class="panel panel-table">
+      <div class="panel-header">
+        <h2 class="panel-title">📋 Attack Log</h2>
+        <div class="table-filters" role="group" aria-label="Filter by service">
+          <button class="filter-btn active" data-filter="all" id="filter-all">All</button>
+          <button class="filter-btn filter-ssh" data-filter="SSH" id="filter-ssh">SSH</button>
+          <button class="filter-btn filter-ftp" data-filter="FTP" id="filter-ftp">FTP</button>
+          <button class="filter-btn filter-telnet" data-filter="Telnet" id="filter-telnet">Telnet</button>
+          <button class="filter-btn filter-http" data-filter="HTTP" id="filter-http">HTTP</button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table id="log-table" aria-label="Detailed attack log">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Time (UTC)</th>
+              <th>Service / Severity</th>
+              <th>IP Address</th>
+              <th>Location</th>
+              <th>Username</th>
+              <th>Password</th>
+              <th>Payload / Extra</th>
+              <th>Tactic</th>
+              <th>Technique</th>
+              <th>Campaign</th>
+            </tr>
+          </thead>
+          <tbody id="log-tbody"></tbody>
+        </table>
+        <div id="empty-state" class="empty-state">
+          <div class="empty-icon">🍯</div>
+          <p>Waiting for attackers to take the bait…</p>
+          <p class="empty-sub">Try connecting to port 2222 (SSH), 2121 (FTP), 2323 (Telnet), or 8080 (HTTP)</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+  <!-- Scripts -->
+  <script src="/static/js/leaflet.js"></script>
+  <script src="/static/js/socket.io.min.js"></script>
+  <script>
+    /* socket.io loaded — start dashboard */
+    window.addEventListener('load', function() {
+      if (typeof io === 'undefined') {
+        document.getElementById('sio-err').style.display = 'block';
+        return;
+      }
+      var s = document.createElement('script');
+      s.src = '/static/js/dashboard.js';
+      document.head.appendChild(s);
+    });
+  </script>
+  <div id="sio-err" style="display:none;position:fixed;top:80px;left:50%;
+    transform:translateX(-50%);background:#1e293b;border:1px solid #ef4444;
+    color:#f87171;padding:1.2rem 2rem;border-radius:10px;font-family:monospace;
+    font-size:0.85rem;z-index:9999;text-align:center;max-width:500px">
+    &#9888; Socket.IO client failed to load.<br/>
+    Check that <b>static/js/socket.io.min.js</b> exists and is valid.
+  </div>
+</body>
+</html>
+
+

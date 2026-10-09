@@ -1,0 +1,37 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# Logs & sensitive data
+logs/attacks.json
+logs/host_rsa.key
+logs/*.key
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Demo video (too large for git — store on GitHub Releases or LFS)
+honey trap.mp4
