@@ -21,7 +21,7 @@
 
 ## 📽 Demo Video
 
-https://github.com/CyberVortexX/multi-service-honeypot/assets/video/honey-trap.mp4
+https://github.com/CyberVortexX/multi-service-honeypot/releases/download/v1.0.0/honey-trap-demo.mp4
 
 > Watch HoneyTrap intercept SSH brute-force, FTP credential stuffing, Telnet IoT botnet attacks, and HTTP exploit scans — all visualized live on the world map dashboard.
 
@@ -283,3 +283,4 @@ This project is licensed under the **MIT License** — see [LICENSE](LICENSE) fo
 [![GitHub stars](https://img.shields.io/github/stars/CyberVortexX/multi-service-honeypot?style=social)](https://github.com/CyberVortexX/multi-service-honeypot/stargazers)
 
 </div>
+
