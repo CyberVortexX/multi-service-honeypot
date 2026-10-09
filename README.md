@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 ![HoneyTrap Banner](banner.jpg)
 
@@ -13,7 +13,7 @@
 [![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK%20Tagged-red?style=for-the-badge)](https://attack.mitre.org/)
 [![WebSocket](https://img.shields.io/badge/Real--time-WebSocket-orange?style=for-the-badge&logo=socket.io&logoColor=white)](https://socket.io)
 
-[**Demo Video**](#-demo-video) · [**Quick Start**](#-quick-start) · [**Architecture**](#-architecture)
+[**Demo Video**](#-demo-video) · [**Quick Start**](#-quick-start) · [**Architecture**](#-architecture) · [**Dashboard**](#-dashboard-preview)
 
 </div>
 
@@ -56,61 +56,81 @@ HoneyTrap is a **multi-protocol honeypot** that simultaneously emulates **SSH, F
 | ⬇ **JSON Export** | One-click download of all captured events |
 | 🔄 **Persistent Logs** | Events survive server restarts — reloaded from JSONL on startup |
 | 🌍 **IP Geolocation** | City, country, ISP, and GPS coordinates for map plotting |
-| 🖥 **Windows One-Click Launch** | start.bat auto-installs deps, starts server, opens browser |
+| 🖥 **Windows One-Click Launch** | `start.bat` auto-installs deps, starts server, opens browser |
 
 ---
 
 ## 📸 Dashboard Preview
 
-`
-┌─────────────────────────────────────────────────────────────────┐
-│  🍯 HoneyTrap          ● LIVE MONITORING    [🗑 Clear] [⬇ Export]│
-├──────────┬──────────┬──────────┬──────────┬────────────────────┤
-│  🎯 847  │  🔐 312  │  📂 198  │  💻 224  │  🌐 113            │
-│  Total   │   SSH    │   FTP    │  Telnet  │  HTTP              │
-├──────────┴──────────┴──────────┴──────────┴────────────────────┤
-│  🗺 Global Attack Map (Leaflet)    │  ⚡ Live Feed              │
-│  [World map with attack markers]   │  [SSH] 185.220.x.x Russia  │
-│  Red/orange dots per attacker IP   │  [FTP] 218.92.x.x China    │
-│  with popup: IP, city, ISP         │  [Tel] 91.108.x.x Ukraine  │
-├────────────────────────────────────┴────────────────────────────┤
-│  📋 Attack Log — [All][SSH][FTP][Telnet][HTTP]                  │
-│  # │ Time    │ Service │ IP         │ Location │ User  │ Pass   │
-│  1 │ 12:34:01│ SSH HIGH│ 185.220... │ Germany  │ root  │ 123456 │
-└─────────────────────────────────────────────────────────────────┘
-`
+Layout of the live dashboard served at `http://localhost:5000`:
+
+```text
++-----------------------------------------------------------------------+
+|  HONEYTRAP            * LIVE MONITORING             [Clear] [Export]  |
++------------+------------+------------+------------+-------------------+
+|    847     |    312     |    198     |    224     |        113        |
+|   Total    |    SSH     |    FTP     |   Telnet   |       HTTP        |
+|    ~~~~    |    ~~~~    |    ~~~~    |    ~~~~    |       ~~~~        |
++------------+------------+------------+------------+-------------------+
+| Global Attack Map (Leaflet)                | Live Feed                |
++--------------------------------------------+--------------------------+
+| [ world map with animated markers ]        | [SSH] 185.220.x.x DE     |
+| red/orange dot per attacker IP             | [FTP] 218.92.x.x  CN     |
+| popup: IP, city, ISP                       | [TEL] 91.108.x.x  UA     |
+|                                            | [HTTP] 45.95.x.x   NL    |
++--------------------------------------------+--------------------------+
+| Attack Log   [All] [SSH] [FTP] [Telnet] [HTTP]       Search: [____]   |
++-----------------------------------------------------------------------+
+| #   Time      Service     IP              Location   User    Pass     |
++-----------------------------------------------------------------------+
+| 1   12:34:01  SSH  HIGH   185.220.x.x     Germany    root    123456   |
+| 2   12:34:03  FTP  HIGH   218.92.x.x      China      admin   admin    |
+| 3   12:34:05  TEL  MED    91.108.x.x      Ukraine    root    xc3511   |
++-----------------------------------------------------------------------+
+```
+
+| Panel | What it shows |
+|---|---|
+| **Header** | Live-monitoring status, plus **Clear** (reset log) and **Export** (download JSON) buttons |
+| **KPI cards** | Total events and per-service counters (SSH / FTP / Telnet / HTTP) with sparkline trends |
+| **Global Attack Map** | Leaflet world map; one animated marker per attacker IP, popup shows IP, city, and ISP |
+| **Live Feed** | Newest events pushed over WebSocket as they happen |
+| **Attack Log** | Filterable, searchable table with time, service, severity, IP, location, username, and password |
 
 ---
 
 ## ⚡ Quick Start
 
 ### Prerequisites
-- **Python 3.12+** installed and on PATH
+
+- **Python 3.12+** installed and on your PATH
 - Internet connection (for IP geolocation lookups)
 
 ### Option A — Windows (One-Click)
 
-`at
-REM Just double-click start.bat
-REM It will: kill old instances → install deps → start server → open browser
+Double-click `start.bat`, or run it from a terminal:
+
+```bat
 start.bat
-`
+```
+
+It will: kill old instances → install dependencies → start the server → open the browser.
 
 ### Option B — Manual (All Platforms)
 
-`ash
+```bash
 # 1. Install dependencies
 pip install flask flask-socketio paramiko requests eventlet
 
 # 2. Start the honeypot (all 4 services + dashboard)
 python honeypot_server.py
 
-# 3. Open dashboard in browser
-# http://localhost:5000
+# 3. Open the dashboard in your browser
+#    http://localhost:5000
 
-# 4. (Optional) Run attack simulation
+# 4. (Optional) Run the attack simulation in a second terminal
 python simulate_attacks.py
-`
+```
 
 ---
 
@@ -124,55 +144,125 @@ python simulate_attacks.py
 | 🌐 HTTP | **8080** | 80 |
 | 📊 Dashboard | **5000** | — |
 
-> **Note:** Alternate ports are used for safe testing without root/admin privileges. To capture attacks on real ports (22, 21, 23, 80), run with elevated privileges and change the port constants in honeypot_server.py.
+> **Note:** Alternate ports are used for safe testing without root/admin privileges. To capture attacks on real ports (22, 21, 23, 80), run with elevated privileges and change the port constants in `honeypot_server.py`.
 
 ---
 
 ## 🏗 Architecture
 
-`
-┌─────────────────────────────────────────────────────────────────────┐
-│                        HoneyTrap System                             │
-│                                                                     │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌────────┐  │
-│  │ SSH Honeypot │  │ FTP Honeypot │  │ Telnet HP    │  │ HTTP HP│  │
-│  │  Port 2222   │  │  Port 2121   │  │  Port 2323   │  │ Pt8080 │  │
-│  │  (Paramiko)  │  │  (raw sock)  │  │  (raw sock)  │  │(socket)│  │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘  └───┬────┘  │
-│         └─────────────────┴──────────────────┴──────────────┘       │
-│                                    │                                 │
-│                            log_event()                               │
-│                                    │                                 │
-│                    ┌───────────────▼──────────────┐                 │
-│                    │        Event Pipeline         │                 │
-│                    │  1. Geo lookup (ip-api.com)   │                 │
-│                    │  2. MITRE ATT&CK tagging      │                 │
-│                    │  3. Append to attacks.json    │                 │
-│                    │  4. socketio.emit() to clients│                 │
-│                    └───────────────┬──────────────┘                 │
-│                                    │                                 │
-│                    ┌───────────────▼──────────────┐                 │
-│                    │    Flask Dashboard :5000      │                 │
-│                    │  GET /           → index.html │                 │
-│                    │  GET /api/events → JSON log   │                 │
-│                    │  GET /api/stats  → KPI data   │                 │
-│                    │  POST /api/inject → simulator │                 │
-│                    │  POST /api/clear → reset      │                 │
-│                    └───────────────┬──────────────┘                 │
-│                                    │ WebSocket (Socket.IO)           │
-│                    ┌───────────────▼──────────────┐                 │
-│                    │     Browser Dashboard         │                 │
-│                    │  Leaflet Map + Live Feed +    │                 │
-│                    │  KPI Cards + Log Table        │                 │
-│                    └──────────────────────────────┘                 │
-└─────────────────────────────────────────────────────────────────────┘
-`
+### System Overview
+
+```mermaid
+flowchart TB
+    ATT(["Attackers: bots, scanners, brute-forcers"])
+
+    subgraph HP["Honeypot Services - honeypot_server.py"]
+        direction LR
+        SSH["SSH :2222<br/>Paramiko"]
+        FTP["FTP :2121<br/>raw socket"]
+        TEL["Telnet :2323<br/>raw socket"]
+        HTTP["HTTP :8080<br/>socket"]
+    end
+
+    ATT --> SSH
+    ATT --> FTP
+    ATT --> TEL
+    ATT --> HTTP
+
+    SSH --> LOG
+    FTP --> LOG
+    TEL --> LOG
+    HTTP --> LOG
+
+    LOG{{"log_event()"}}
+
+    subgraph PIPE["Event Pipeline"]
+        direction TB
+        G["1. Geo lookup<br/>ip-api.com"]
+        M["2. MITRE ATT&CK tagging<br/>tactic, technique, severity"]
+        P["3. Append to<br/>logs/attacks.json"]
+        E["4. socketio.emit()<br/>to all clients"]
+        G --> M --> P --> E
+    end
+
+    LOG --> G
+
+    subgraph WEB["Flask Dashboard :5000"]
+        direction TB
+        R1["GET / : index.html"]
+        R2["GET /api/events : JSON log"]
+        R3["GET /api/stats : KPI data"]
+        R4["POST /api/inject : simulator"]
+        R5["POST /api/clear : reset"]
+    end
+
+    P --> DB[("JSONL log file")]
+    DB -. reload on startup .-> WEB
+    E ==>|WebSocket / Socket.IO| UI
+
+    subgraph UI["Browser Dashboard"]
+        direction LR
+        MAP["Leaflet map"]
+        FEED["Live feed"]
+        KPI["KPI cards"]
+        TBL["Log table"]
+    end
+
+    WEB --> UI
+    SIM["simulate_attacks.py<br/>5 campaigns"] -. POST /api/inject .-> R4
+```
+
+### Event Lifecycle
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Attacker
+    participant H as Honeypot (SSH / FTP / Telnet / HTTP)
+    participant P as Event Pipeline
+    participant G as ip-api.com
+    participant F as logs/attacks.json
+    participant D as Browser Dashboard
+
+    A->>H: Connect and attempt login / request
+    H->>P: log_event(service, ip, creds, payload)
+    P->>G: Geolocate IP
+    G-->>P: city, country, ISP, lat/lon
+    P->>P: Tag MITRE tactic, technique, severity
+    P->>F: Append JSON line
+    P-->>D: socketio.emit (WebSocket push)
+    D->>D: Update map, feed, KPIs, table
+    H-->>A: Realistic failure / banner response
+```
+
+### Component Summary
+
+| Layer | Component | Responsibility |
+|---|---|---|
+| **Capture** | SSH / FTP / Telnet / HTTP listeners | Emulate real services on decoy ports and record every interaction |
+| **Enrich** | Event pipeline | Geolocate, classify with MITRE ATT&CK, assign severity |
+| **Store** | `logs/attacks.json` | Append-only JSONL log, reloaded on startup |
+| **Serve** | Flask + Flask-SocketIO (:5000) | REST API for history and stats, WebSocket for live push |
+| **Visualize** | Browser SPA | Leaflet map, live feed, KPI cards, filterable log table |
+| **Test** | `simulate_attacks.py` | Injects realistic attack campaigns via `POST /api/inject` |
+
+---
+
+## 🌐 Dashboard API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | Dashboard single-page app (`templates/index.html`) |
+| `GET` | `/api/events` | Full event log as JSON |
+| `GET` | `/api/stats` | KPI counters per service |
+| `POST` | `/api/inject` | Inject a simulated event (used by the simulator) |
+| `POST` | `/api/clear` | Clear all stored events |
 
 ---
 
 ## 🎭 Attack Simulator (5 Campaigns)
 
-Run python simulate_attacks.py to generate realistic attack traffic:
+Run `python simulate_attacks.py` to generate realistic attack traffic:
 
 | Campaign | Services | Tactic | Severity |
 |---|---|---|---|
@@ -188,7 +278,7 @@ Each campaign uses realistic IP pools from **12 countries** with proper protocol
 
 ## 📝 Sample Log Entry
 
-`json
+```json
 {
   "id": 42,
   "timestamp": "2026-10-09T05:14:23.456Z",
@@ -209,15 +299,15 @@ Each campaign uses realistic IP pools from **12 countries** with proper protocol
   "severity": "HIGH",
   "campaign": "Mirai Botnet Sweep"
 }
-`
+```
 
 ---
 
 ## 🗂 Project Structure
 
-`
+```text
 honeypot/
-├── honeypot_server.py        # Core server — all honeypot services + dashboard API
+├── honeypot_server.py        # Core server: all honeypot services + dashboard API
 ├── simulate_attacks.py       # 5-campaign MITRE ATT&CK attack simulator
 ├── start.bat                 # Windows one-click launcher
 ├── banner.jpg                # Project banner
@@ -235,7 +325,7 @@ honeypot/
 │   ├── attacks.json          # Persistent JSONL event log (gitignored)
 │   └── host_rsa.key          # Auto-generated SSH host key (gitignored)
 └── README.md
-`
+```
 
 ---
 
@@ -251,6 +341,17 @@ honeypot/
 | **IP Geolocation** | ip-api.com (free, 45 req/min) |
 | **Frontend Fonts** | Google Fonts — Outfit + JetBrains Mono |
 | **Event Persistence** | JSONL flat-file database |
+
+---
+
+## 🧰 Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| `Address already in use` | Another instance is running. Stop it, or on Windows run `start.bat` (it kills old instances first). |
+| Permission denied on ports 21/22/23/80 | Use the default high ports, or run with admin/root privileges. |
+| Map shows no location for an IP | ip-api.com is rate-limited to 45 requests/min, and private IPs cannot be geolocated. |
+| Dashboard is empty | Run `python simulate_attacks.py` to generate test events. |
 
 ---
 
@@ -283,4 +384,3 @@ This project is licensed under the **MIT License** — see [LICENSE](LICENSE) fo
 [![GitHub stars](https://img.shields.io/github/stars/CyberVortexX/multi-service-honeypot?style=social)](https://github.com/CyberVortexX/multi-service-honeypot/stargazers)
 
 </div>
-
